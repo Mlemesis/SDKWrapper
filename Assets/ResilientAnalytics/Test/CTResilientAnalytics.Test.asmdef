@@ -1,0 +1,18 @@
+{
+    "name": "CTResilientAnalytics.Test",
+    "rootNamespace": "",
+    "references": [
+        "GUID:cd4339fb5dafb47a0bf54a74615baf7a"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

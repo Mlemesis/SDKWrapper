@@ -15,7 +15,6 @@ namespace CentralTech.CTResilientAnalytics.Editor
         private List<AnalyticSentEvent> _analyticEventCache = new();
         private Vector2 _scrollPosition = Vector2.zero;
         private Vector2 _statisticsScrollPosition = Vector2.zero;
-        private string _eventNameInput = "";
         
         // Track success/failure/retries per event name
         private Dictionary<string, EventStatistics> _eventStats = new();
