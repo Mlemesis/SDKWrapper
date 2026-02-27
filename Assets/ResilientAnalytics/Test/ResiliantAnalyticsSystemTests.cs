@@ -12,6 +12,7 @@ public class ResiliantAnalyticsSystemTests
 {
     private ResilientAnalyticsSystem _analyticsSystem;
     private MockEventSystem _mockEventSystem;
+    private float _waitTime = 6f; //needs to be long enough to allow for any stalled processes
 
     [SetUp]
     public void Setup()
@@ -38,7 +39,7 @@ public class ResiliantAnalyticsSystemTests
 
         // Act
         _analyticsSystem.SendEvent("TestEvent");
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(_waitTime);
 
         // Assert
         // Event should be queued but not processed yet
@@ -56,7 +57,7 @@ public class ResiliantAnalyticsSystemTests
         _analyticsSystem.UnblockEventSending();
         
         // Wait for coroutine to process
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(_waitTime);
         
         // Assert
         Assert.That(_mockEventSystem.TriggeredEvents.Count, Is.GreaterThan(0), 
@@ -72,7 +73,7 @@ public class ResiliantAnalyticsSystemTests
         _analyticsSystem.SendEvent("MyEvent");
         
         // Wait for event to be processed
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(_waitTime);
 
         // Assert
         Assert.That(_mockEventSystem.TriggeredEvents.Count, Is.GreaterThan(0));
@@ -89,7 +90,7 @@ public class ResiliantAnalyticsSystemTests
 
         // Act
         _analyticsSystem.SendEvent("BlockedEvent");
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(_waitTime);
 
         // Assert - Event is queued but not immediately processed
         Assert.That(_mockEventSystem.TriggeredEvents.Count, Is.EqualTo(0));
@@ -108,7 +109,7 @@ public class ResiliantAnalyticsSystemTests
             shortTimeSystem.SendEvent($"Event{i}");
         }
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(_waitTime);
 
         // Assert - Some events should be processed
         var eventsAfter = _mockEventSystem.TriggeredEvents.Count;
@@ -129,7 +130,7 @@ public class ResiliantAnalyticsSystemTests
 
         // Act
         _analyticsSystem.Destroy();
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(_waitTime);
         // Assert
         var coroutineAfterDestroy = Object.FindObjectOfType<CoroutineRunner>();
         Assert.That(coroutineAfterDestroy, Is.Null, "CoroutineRunner should be destroyed");
@@ -140,20 +141,6 @@ public class ResiliantAnalyticsSystemTests
     {
         // Assert
         Assert.That(_analyticsSystem.Interface, Is.EqualTo(typeof(IResilientAnalyticsSystem)));
-    }
-
-    // Helper method to extract event names
-    private List<string> GetEventNames(List<IEvent> events)
-    {
-        var names = new List<string>();
-        foreach (var evt in events)
-        {
-            if (evt is AnalyticSentEvent analyticEvent)
-            {
-                names.Add(analyticEvent.EventName);
-            }
-        }
-        return names;
     }
 }
 
