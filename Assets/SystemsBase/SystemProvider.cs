@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CentralTech.SystemsBase
+namespace CentralTech.CTSystemsBase
 {
     public interface IGenericSystem
     {

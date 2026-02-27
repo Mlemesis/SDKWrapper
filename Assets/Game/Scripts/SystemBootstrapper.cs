@@ -1,5 +1,6 @@
 using CentralTech.CTResilientAnalytics;
-using CentralTech.SystemsBase;
+using CentralTech.CTEventSystem;
+using CentralTech.CTSystemsBase;
 using UnityEngine;
 
 public class SystemBootstrapper : MonoBehaviour
@@ -7,6 +8,7 @@ public class SystemBootstrapper : MonoBehaviour
     private static SystemBootstrapper _instance;
     
     private IResilientAnalyticsSystem _resilientAnalyticsSystem;
+    private IEventSystem _eventSystem;
     //private IResilientAnalyticsSystemV2 _resilientAnalyticsSystemV2;
     void Awake()
     {
@@ -19,9 +21,12 @@ public class SystemBootstrapper : MonoBehaviour
         _instance = this;
         DontDestroyOnLoad(this.gameObject);
 
-        _resilientAnalyticsSystem = new ResilientAnalyticsSystem(5f);
+        _eventSystem = new EventSystem();
+        _resilientAnalyticsSystem = new ResilientAnalyticsSystem(_eventSystem,5f);
+
        // _resilientAnalyticsSystemV2 = new ResilientAnalyticsSystemV2(5f);
         SystemProvider.Instance.Register(_resilientAnalyticsSystem);
+        SystemProvider.Instance.Register(_eventSystem);
         
     }
 
@@ -39,6 +44,7 @@ public class SystemBootstrapper : MonoBehaviour
         if (_instance == this)
         {
             SystemProvider.Instance.Unregister(_resilientAnalyticsSystem);
+            SystemProvider.Instance.Unregister(_eventSystem);
             _instance = null;
         }
     }

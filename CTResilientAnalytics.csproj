@@ -733,6 +733,10 @@
       <Project>{4f7d1b6f-d954-7537-efbf-39f6d5eb92cc}</Project>
       <Name>CTSystemsBase</Name>
     </ProjectReference>
+    <ProjectReference Include="CTEventSystem.csproj">
+      <Project>{ba277d6c-574a-6256-edca-8d58e311e8bb}</Project>
+      <Name>CTEventSystem</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

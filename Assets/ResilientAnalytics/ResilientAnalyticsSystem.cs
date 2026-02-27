@@ -1,12 +1,31 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using CentralTech.SystemsBase;
+using CentralTech.CTEventSystem;
+using CentralTech.CTSystemsBase;
 using Interview.Mocks;
 using UnityEngine;
 
 namespace CentralTech.CTResilientAnalytics
 {
+    public struct AnalyticSentEvent : IEvent
+    {
+        public readonly string EventName;
+        public readonly float TimeTaken;
+        public readonly bool Success;
+        public readonly string ErrorMessage;
+        public readonly int QueueSize;
+
+        public AnalyticSentEvent(string eventName, float timeTaken, bool success, string errorMessage, int queueSize)
+        {
+            EventName = eventName;
+            TimeTaken = timeTaken;
+            Success = success;
+            ErrorMessage = errorMessage;
+            QueueSize = queueSize;
+        }
+    }
+    
     public interface IResilientAnalyticsSystem : IGenericSystem
     {
         void SendEvent(string eventName);
@@ -20,10 +39,12 @@ namespace CentralTech.CTResilientAnalytics
         private CoroutineRunner _coroutineRunner;
         private Coroutine _processQueueCoroutine;
         private bool _isProcessingQueue = false;
+        private IEventSystem _eventSystem;
         
-        public ResilientAnalyticsSystem(float queueMaximumTime = 5f)
+        public ResilientAnalyticsSystem(IEventSystem eventSystem, float queueMaximumTime = 5f)
         {
             _legacyService = new UnstableLegacyService();
+            _eventSystem = eventSystem;
             _queueMaximumTime = queueMaximumTime;
             
             // Create a GameObject to run coroutines on
@@ -40,22 +61,25 @@ namespace CentralTech.CTResilientAnalytics
             }
         }
 
-        private void SendEventWrapped(string eventName)
+        private (bool,string) SendEventWrapped(string eventName)
         {
             bool success = false;
+            string errorMessage = "";
             try
             {
                 success = _legacyService.SendEvent(eventName);
             }
             catch (Exception e)
             {
-                Debug.LogWarning("Sending event failed: " + e.Message + "Will cache and try again");
+                errorMessage = "Sending event failed: " + e.Message + "Will cache and try again";
+                Debug.LogWarning(errorMessage);
             }
             
             if (!success)
             {
                 _eventQueue.Add(eventName);
             }
+            return (success, errorMessage);
         }
 
         private IEnumerator ProcessQueueCoroutine()
@@ -68,11 +92,13 @@ namespace CentralTech.CTResilientAnalytics
                 _eventQueue.RemoveAt(0);
                 
                 float startTime = Time.time;
-                SendEventWrapped(eventName);
+                (bool,string) success = SendEventWrapped(eventName);
                 
                 yield return null;
                 
                 float timeTaken = Time.time - startTime;
+                
+                _eventSystem.TriggerEvent(new AnalyticSentEvent(eventName, timeTaken, success.Item1, success.Item2, _eventQueue.Count));
                 currentQueueTime += timeTaken;
 
                 if (currentQueueTime > _queueMaximumTime)

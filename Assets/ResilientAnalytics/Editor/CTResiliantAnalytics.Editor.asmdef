@@ -2,12 +2,15 @@
     "name": "CTResiliantAnalytics.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:97907a644bd544178b5fb664e61cbe69"
+        "GUID:97907a644bd544178b5fb664e61cbe69",
+        "GUID:cd4339fb5dafb47a0bf54a74615baf7a",
+        "GUID:8a424c56841f4458f90e5b1527d06f28",
+        "GUID:a3a3ab3c28dea43059a5dc3b69adcf5f"
     ],
-    "includePlatforms": [],
-    "excludePlatforms": [
+    "includePlatforms": [
         "Editor"
     ],
+    "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],

@@ -1,9 +1,8 @@
 {
-    "name": "CTResilientAnalytics",
+    "name": "CTEventSystem",
     "rootNamespace": "",
     "references": [
-        "GUID:a3a3ab3c28dea43059a5dc3b69adcf5f",
-        "GUID:8a424c56841f4458f90e5b1527d06f28"
+        "GUID:a3a3ab3c28dea43059a5dc3b69adcf5f"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
