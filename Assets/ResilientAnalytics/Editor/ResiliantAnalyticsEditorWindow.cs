@@ -138,8 +138,8 @@ namespace CentralTech.CTResilientAnalytics.Editor
             
             // Display time saved and blocking information
             string blockingInfo = _isCurrentlyBlocked ? "🔒 BLOCKED" : "Unblocked";
-            EditorGUILayout.LabelField($"Time Saved: {_totalTimeSaved:F3}s | Queue Status: {blockingInfo}", EditorStyles.label);
-            EditorGUILayout.LabelField($"Queue Size: {_queueSize}", EditorStyles.label);
+            EditorGUILayout.LabelField($"Queue Size: {_queueSize} | Time Saved: {_totalTimeSaved:F3}s | Queue Status: {blockingInfo}", EditorStyles.label);
+            EditorGUILayout.LabelField($"", EditorStyles.label);
             EditorGUILayout.EndVertical();
         }
 
@@ -249,7 +249,7 @@ namespace CentralTech.CTResilientAnalytics.Editor
         {
             if (eventObject is AnalyticsQueuePreventedOrStalledEvent queueEvent)
             {
-                _totalTimeSaved += queueEvent.AverageTimeRemaining;
+                _totalTimeSaved = queueEvent.AverageTimeRemaining;
                 _isCurrentlyBlocked = queueEvent.Blocked;
                 _queueSize = queueEvent.QueueSize;
                 Repaint();
@@ -269,6 +269,9 @@ namespace CentralTech.CTResilientAnalytics.Editor
             {
                 _resilientAnalyticsSystem = null;
                 _eventSystem = null;
+                _totalTimeSaved = 0;
+                _isCurrentlyBlocked = false;
+                _queueSize = 0; 
             }
         }
 
