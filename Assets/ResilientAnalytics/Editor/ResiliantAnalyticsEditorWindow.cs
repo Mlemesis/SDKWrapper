@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -10,17 +9,16 @@ namespace CentralTech.CTResilientAnalytics.Editor
     public class ResiliantAnalyticsEditorWindow : EditorWindow
     {
         private IEventSystem _eventSystem;
-        private ResilientAnalyticsSystem _resilientAnalyticsSystem;
-        private bool _setupForPlayMode = false;
+        private IResilientAnalyticsSystem _resilientAnalyticsSystem;
 
         // Cache for analytic events
-        private List<AnalyticSentEvent> _analyticEventCache = new List<AnalyticSentEvent>();
+        private List<AnalyticSentEvent> _analyticEventCache = new();
         private Vector2 _scrollPosition = Vector2.zero;
         private Vector2 _statisticsScrollPosition = Vector2.zero;
         private string _eventNameInput = "";
         
         // Track success/failure/retries per event name
-        private Dictionary<string, EventStatistics> _eventStats = new Dictionary<string, EventStatistics>();
+        private Dictionary<string, EventStatistics> _eventStats = new();
 
         [MenuItem("CT Tools/Resilient Analytics Monitor")]
         public static void ShowWindow()
@@ -39,6 +37,11 @@ namespace CentralTech.CTResilientAnalytics.Editor
         private void OnGUI()
         {
             SetupVariables();
+            if (_resilientAnalyticsSystem == null)
+            {
+                EditorGUILayout.HelpBox("Enter play mode to use monitor", MessageType.Error);
+                return;
+            }
             DrawAnalyticsUI();
         }
 
@@ -76,14 +79,14 @@ namespace CentralTech.CTResilientAnalytics.Editor
                     string eventName = kvp.Key;
                     EventStatistics stats = kvp.Value;
 
-                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
                     EditorGUILayout.LabelField($"Event: {eventName}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"  Successes: {stats.SuccessCount}", EditorStyles.label);
                     EditorGUILayout.LabelField($"  Failures: {stats.FailureCount}", EditorStyles.label);
                     EditorGUILayout.LabelField($"  Retries: {stats.RetryCount}", EditorStyles.label);
                     EditorGUILayout.LabelField($"  Total Attempts: {stats.TotalAttempts}", EditorStyles.label);
                     EditorGUILayout.LabelField($"  Avg Time: {stats.GetAverageTime():F3}s", EditorStyles.label);
-                    EditorGUILayout.EndVertical();
+                    EditorGUILayout.EndHorizontal();
                 }
                 
                 EditorGUILayout.EndScrollView();
@@ -188,7 +191,7 @@ namespace CentralTech.CTResilientAnalytics.Editor
         private void DrawAnalyticEventEntry(AnalyticSentEvent analyticEvent, int index)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            
+            EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField($"Event #{index + 1}", EditorStyles.boldLabel);
             EditorGUILayout.LabelField($"Event Name: {analyticEvent.EventName}");
             EditorGUILayout.LabelField($"Time Taken: {analyticEvent.TimeTaken:F3}s");
@@ -196,13 +199,13 @@ namespace CentralTech.CTResilientAnalytics.Editor
             string successText = analyticEvent.Success ? "✓ Success" : "✗ Failed";
             EditorGUILayout.LabelField($"Status: {successText}", EditorStyles.label);
             
+            EditorGUILayout.LabelField($"Queue Size: {analyticEvent.QueueSize}");
+            
+            EditorGUILayout.EndHorizontal();
             if (!string.IsNullOrEmpty(analyticEvent.ErrorMessage))
             {
                 EditorGUILayout.LabelField($"Error: {analyticEvent.ErrorMessage}", EditorStyles.wordWrappedLabel);
             }
-            
-            EditorGUILayout.LabelField($"Queue Size: {analyticEvent.QueueSize}");
-            
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space();
         }
@@ -241,22 +244,17 @@ namespace CentralTech.CTResilientAnalytics.Editor
 
         private void SetupVariables()
         {
-            if (!_setupForPlayMode && Application.isPlaying)
+            if (_resilientAnalyticsSystem == null && Application.isPlaying)
             {   
-                //make sure we clean up as gameobjects are spawned to run coroutines
-                _resilientAnalyticsSystem?.Destroy();
                 _eventSystem = SystemProvider.Instance.GetSystem<IEventSystem>();
-                _resilientAnalyticsSystem = SystemProvider.Instance.GetSystem<ResilientAnalyticsSystem>();
+                _resilientAnalyticsSystem = SystemProvider.Instance.GetSystem<IResilientAnalyticsSystem>();
                 
                 RegisterToEvent();
-                _setupForPlayMode = true;
             }
-            else if ((_setupForPlayMode || _resilientAnalyticsSystem == null) && !Application.isPlaying)
+            else if (!Application.isPlaying)
             {
-                _setupForPlayMode = false;
-                _eventSystem = new EventSystem();
-                RegisterToEvent();
-                _resilientAnalyticsSystem = new ResilientAnalyticsSystem(_eventSystem);
+                _resilientAnalyticsSystem = null;
+                _eventSystem = null;
             }
         }
 

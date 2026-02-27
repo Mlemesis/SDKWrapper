@@ -28,9 +28,30 @@ namespace CentralTech.CTResilientAnalytics
     
     public interface IResilientAnalyticsSystem : IGenericSystem
     {
+        
+        /// <summary>
+        /// Can be called at any time, but can cause frame drops,
+        /// to prevent frame drop during key moments use BlockEventSending
+        /// then use UnblockEventSending when ready
+        /// </summary>
+        /// <param name="eventName"></param>
         void SendEvent(string eventName);
+        
+        /// <summary>
+        /// Use this to prevent any events being sent, such as during core gameplay
+        /// </summary>
+        void BlockEventSending();
+        /// <summary>
+        /// Use this to allow events to be sent again
+        /// Calling this will trigger any queued items to be sent
+        /// Suffested to be called during clean up/loading 
+        /// </summary>
+        void UnblockEventSending();
     }
     
+    /// <summary>
+    /// System that sends events to a 3rd party analytics service.
+    /// </summary>
     public class ResilientAnalyticsSystem : IResilientAnalyticsSystem
     {
         private UnstableLegacyService _legacyService;
@@ -40,6 +61,7 @@ namespace CentralTech.CTResilientAnalytics
         private Coroutine _processQueueCoroutine;
         private bool _isProcessingQueue = false;
         private IEventSystem _eventSystem;
+        private bool _eventSendingBlocked = false;
         
         public ResilientAnalyticsSystem(IEventSystem eventSystem, float queueMaximumTime = 5f)
         {
@@ -55,7 +77,21 @@ namespace CentralTech.CTResilientAnalytics
         public void SendEvent(string eventName)
         {
             _eventQueue.Add(eventName);
-            if (!_isProcessingQueue)
+            if (!_eventSendingBlocked && !_isProcessingQueue)
+            {
+                _processQueueCoroutine = _coroutineRunner.StartCoroutine(ProcessQueueCoroutine());
+            }
+        }
+
+        public void BlockEventSending()
+        {
+            _eventSendingBlocked = true;
+        }
+
+        public void UnblockEventSending()
+        {
+            _eventSendingBlocked = false;
+            if (!_isProcessingQueue && _eventQueue.Count > 0)
             {
                 _processQueueCoroutine = _coroutineRunner.StartCoroutine(ProcessQueueCoroutine());
             }

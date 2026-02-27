@@ -9,7 +9,6 @@ public class SystemBootstrapper : MonoBehaviour
     
     private IResilientAnalyticsSystem _resilientAnalyticsSystem;
     private IEventSystem _eventSystem;
-    //private IResilientAnalyticsSystemV2 _resilientAnalyticsSystemV2;
     void Awake()
     {
         if (_instance != null)
@@ -24,7 +23,6 @@ public class SystemBootstrapper : MonoBehaviour
         _eventSystem = new EventSystem();
         _resilientAnalyticsSystem = new ResilientAnalyticsSystem(_eventSystem,5f);
 
-       // _resilientAnalyticsSystemV2 = new ResilientAnalyticsSystemV2(5f);
         SystemProvider.Instance.Register(_resilientAnalyticsSystem);
         SystemProvider.Instance.Register(_eventSystem);
         
@@ -36,7 +34,6 @@ public class SystemBootstrapper : MonoBehaviour
         {
             _resilientAnalyticsSystem.SendEvent("Blaaa" + Random.Range(0, 1000));
         }
-       // _resilientAnalyticsSystemV2.Update();
     }
 
     void OnDestroy()

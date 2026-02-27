@@ -63,11 +63,6 @@
 
          public Type Interface => typeof(IEventSystem);
 
-         public void Reset()
-         {
-
-         }
-
          public void Destroy()
          {
              registeredEvents.Clear();
