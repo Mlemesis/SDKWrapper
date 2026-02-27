@@ -13,3 +13,7 @@ Provided is a SystemBootrapper which setup the various systems used. This is on 
 ## Additional
 SystemsBase and EventSystem has also been added to the project. These are useful base systems that are good for any project. Ordinarily these would be there own packages and included using the package manager.
 ResiliantAnalyticsV2 this is a less developed version of the system, which overrides the Unity Random to allow us to use async. This has been left in as a conversation point but not as the main solution.
+
+## AI usage
+Claude is built into Rider and this was used to help generate the code for the editor. Editor code can be difficult to get right and using AI to generate it means you can quickly try different layouts and functionality.
+Claude was also used ot help generate the Unit tests, using a third party gives you better coverage and allows for more indepth testing that you might think off yourself. 
