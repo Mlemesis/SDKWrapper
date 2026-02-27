@@ -1,5 +1,5 @@
 {
-    "name": "CTUnstableSDK.Editor",
+    "name": "CTEditorTools",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],

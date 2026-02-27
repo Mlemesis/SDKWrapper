@@ -41,7 +41,7 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Assets/ResilientAnalytics/Editor/CTResiliantAnalyticsV2.Editor.asmdef" />
+    <None Include="Assets/ResilientAnalyticsV2/Editor/CTResiliantAnalyticsV2.Editor.asmdef" />
     <Reference Include="UnityEngine">
       <HintPath>/Applications/Unity/Hub/Editor/2022.3.62f2/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

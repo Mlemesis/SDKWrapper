@@ -1,5 +1,5 @@
 {
-    "name": "CTResilientAnalyticsSDK",
+    "name": "CTResilientAnalytics",
     "rootNamespace": "",
     "references": [
         "GUID:a3a3ab3c28dea43059a5dc3b69adcf5f"

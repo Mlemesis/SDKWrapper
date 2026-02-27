@@ -1,7 +1,6 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using CentralTech.SystemsBase;
 using Interview.Mocks;
 using UnityEngine;
@@ -11,43 +10,38 @@ namespace CentralTech.CTResilientAnalytics
     public interface IResilientAnalyticsSystem : IGenericSystem
     {
         void SendEvent(string eventName);
-        void Update();
     }
     
     public class ResilientAnalyticsSystem : IResilientAnalyticsSystem
     {
         private UnstableLegacyService _legacyService;
-        private CancellationTokenSource _masterCancellationTokenSource;
-        private List<CancellationTokenSource> _activeTasks = new();
         private List<string> _eventQueue = new();
+        private float _queueMaximumTime = 5f;
+        private CoroutineRunner _coroutineRunner;
+        private Coroutine _processQueueCoroutine;
+        private bool _isProcessingQueue = false;
         
-        private float _queueProcessInterval = 5f; // Process queue every 5 seconds
-        private float _timeSinceLastProcess = 0f;
-        
-        public ResilientAnalyticsSystem(float queueProcessInterval)
+        public ResilientAnalyticsSystem(float queueMaximumTime = 5f)
         {
             _legacyService = new UnstableLegacyService();
-            _masterCancellationTokenSource = new CancellationTokenSource();
-            _queueProcessInterval = queueProcessInterval;
+            _queueMaximumTime = queueMaximumTime;
+            
+            // Create a GameObject to run coroutines on
+            GameObject coroutineRunnerObject = new GameObject("ResilientAnalyticsCoroutineRunner");
+            _coroutineRunner = coroutineRunnerObject.AddComponent<CoroutineRunner>();
         }
         
         public void SendEvent(string eventName)
         {
-            // CancellationTokenSource taskCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_masterCancellationTokenSource.Token);
-            // _activeTasks.Add(taskCancellationTokenSource);
-            //
-            // Task.Run(() => SendEventsAsync(eventName, taskCancellationTokenSource.Token), taskCancellationTokenSource.Token)
-            //     .ContinueWith(_ => 
-            //     {
-            //         _activeTasks.Remove(taskCancellationTokenSource);
-            //         taskCancellationTokenSource.Dispose();
-            //     }, TaskScheduler.Default);
+            _eventQueue.Add(eventName);
+            if (!_isProcessingQueue)
+            {
+                _processQueueCoroutine = _coroutineRunner.StartCoroutine(ProcessQueueCoroutine());
+            }
         }
 
-        private async Task SendEventsAsync(string eventName, CancellationToken cancellationToken)
+        private void SendEventWrapped(string eventName)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            
             bool success = false;
             try
             {
@@ -64,48 +58,52 @@ namespace CentralTech.CTResilientAnalytics
             }
         }
 
-        public void Update()
+        private IEnumerator ProcessQueueCoroutine()
         {
-            _timeSinceLastProcess += Time.deltaTime;
-
-            if (_timeSinceLastProcess >= _queueProcessInterval && _eventQueue.Count > 0)
+            _isProcessingQueue = true;
+            float currentQueueTime = 0;
+            while (_eventQueue.Count > 0)
             {
-                _timeSinceLastProcess = 0f;
-                ProcessEventQueue();
-            }
-        }
+                string eventName = _eventQueue[0];
+                _eventQueue.RemoveAt(0);
+                
+                float startTime = Time.time;
+                SendEventWrapped(eventName);
+                
+                yield return null;
+                
+                float timeTaken = Time.time - startTime;
+                currentQueueTime += timeTaken;
 
-        private void ProcessEventQueue()
-        {
-            List<string> eventsToRetry = new List<string>(_eventQueue);
-            _eventQueue.Clear();
-
-            foreach (var eventName in eventsToRetry)
-            {
-                SendEvent(eventName);
+                if (currentQueueTime > _queueMaximumTime)
+                {
+                    _coroutineRunner.StopCoroutine(_processQueueCoroutine);
+                    _isProcessingQueue = false;
+                }
             }
+            _isProcessingQueue = false;
         }
         
         public Type Interface => typeof(IResilientAnalyticsSystem);
  
         public void Destroy()
         {
-            if (_masterCancellationTokenSource != null && !_masterCancellationTokenSource.IsCancellationRequested)
+            if (_coroutineRunner != null)
             {
-                _masterCancellationTokenSource.Cancel();
-                _masterCancellationTokenSource.Dispose();
+                GameObject.Destroy(_coroutineRunner.gameObject);
             }
+        }
+    }
 
-            foreach (var taskTokenSource in _activeTasks)
-            {
-                if (!taskTokenSource.IsCancellationRequested)
-                {
-                    taskTokenSource.Cancel();
-                }
-                taskTokenSource.Dispose();
-            }
-            
-            _activeTasks.Clear();
+    /// <summary>
+    /// Helper MonoBehaviour to run coroutines for the analytics system
+    /// </summary>
+    public class CoroutineRunner : MonoBehaviour
+    {
+        // This class exists solely to run coroutines
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
         }
     }
 }
