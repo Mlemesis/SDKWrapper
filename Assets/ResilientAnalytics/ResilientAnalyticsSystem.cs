@@ -116,7 +116,15 @@ namespace CentralTech.CTResilientAnalytics
         {
             if (_coroutineRunner != null)
             {
-                GameObject.Destroy(_coroutineRunner.gameObject);
+                if (Application.isEditor && !Application.isPlaying)
+                {
+                    GameObject.DestroyImmediate(_coroutineRunner.gameObject);
+                }
+                else
+                {
+                    GameObject.Destroy(_coroutineRunner.gameObject);
+                }
+                
             }
         }
     }
