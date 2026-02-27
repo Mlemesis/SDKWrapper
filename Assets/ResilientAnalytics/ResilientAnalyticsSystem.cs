@@ -25,10 +25,22 @@ namespace CentralTech.CTResilientAnalytics
             QueueSize = queueSize;
         }
     }
+
+    public struct AnalyticsQueuePreventedOrStalledEvent : IEvent
+    {
+        public readonly float AverageTimeRemaining;
+        public readonly int QueueSize;
+        public readonly bool Blocked;
+        public AnalyticsQueuePreventedOrStalledEvent(float averageTimeRemaining, int queueSize, bool blocked)
+        {
+            AverageTimeRemaining = averageTimeRemaining;
+            QueueSize = queueSize;
+            Blocked = blocked;
+        }
+    }
     
     public interface IResilientAnalyticsSystem : IGenericSystem
     {
-        
         /// <summary>
         /// Can be called at any time, but can cause frame drops,
         /// to prevent frame drop during key moments use BlockEventSending
@@ -57,14 +69,15 @@ namespace CentralTech.CTResilientAnalytics
         private UnstableLegacyService _legacyService;
         //this event queue would need to be saved to file to prevent loss of data
         private List<string> _eventQueue = new();
-        private float _queueMaximumTime = 5f;
+        private float _queueMaximumTime = 1f;
         private CoroutineRunner _coroutineRunner;
         private Coroutine _processQueueCoroutine;
         private bool _isProcessingQueue = false;
         private IEventSystem _eventSystem;
         private bool _eventSendingBlocked = false;
+        private float _averageCallTime = 500 * 0.2f;//numbers from the unstable class, average call time taking into account the hitch
         
-        public ResilientAnalyticsSystem(IEventSystem eventSystem, float queueMaximumTime = 5f)
+        public ResilientAnalyticsSystem(IEventSystem eventSystem, float queueMaximumTime = 1f)
         {
             _legacyService = new UnstableLegacyService();
             _eventSystem = eventSystem;
@@ -81,6 +94,11 @@ namespace CentralTech.CTResilientAnalytics
             if (!_eventSendingBlocked && !_isProcessingQueue)
             {
                 _processQueueCoroutine = _coroutineRunner.StartCoroutine(ProcessQueueCoroutine());
+            }
+
+            if (_eventSendingBlocked)
+            {
+                _eventSystem.TriggerEvent(new AnalyticsQueuePreventedOrStalledEvent(_averageCallTime * _eventQueue.Count, _eventQueue.Count, true));
             }
         }
 
@@ -140,7 +158,8 @@ namespace CentralTech.CTResilientAnalytics
 
                 if (currentQueueTime > _queueMaximumTime)
                 {
-                    //we've taken to much time to bail out and we will try again when the next event is sent 
+                    //we've taken to much time so bail out and we will try again when the next event is sent 
+                    _eventSystem.TriggerEvent(new AnalyticsQueuePreventedOrStalledEvent(_averageCallTime * _eventQueue.Count, _eventQueue.Count, false));
                     _coroutineRunner.StopCoroutine(_processQueueCoroutine);
                     _isProcessingQueue = false;
                 }

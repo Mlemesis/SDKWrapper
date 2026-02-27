@@ -21,7 +21,7 @@ public class SystemBootstrapper : MonoBehaviour
         DontDestroyOnLoad(this.gameObject);
 
         _eventSystem = new EventSystem();
-        _resilientAnalyticsSystem = new ResilientAnalyticsSystem(_eventSystem,5f);
+        _resilientAnalyticsSystem = new ResilientAnalyticsSystem(_eventSystem,1f);
 
         SystemProvider.Instance.Register(_resilientAnalyticsSystem);
         SystemProvider.Instance.Register(_eventSystem);
@@ -32,7 +32,17 @@ public class SystemBootstrapper : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.A))
         {
-            _resilientAnalyticsSystem.SendEvent("Blaaa" + Random.Range(0, 1000));
+            _resilientAnalyticsSystem.SendEvent("Thing" + Random.Range(0, 1000));
+        }
+
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            _resilientAnalyticsSystem.BlockEventSending();
+        }
+        
+        if(Input.GetKeyDown(KeyCode.U))
+        {
+            _resilientAnalyticsSystem.UnblockEventSending();
         }
     }
 

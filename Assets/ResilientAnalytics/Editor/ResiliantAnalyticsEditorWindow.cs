@@ -16,6 +16,11 @@ namespace CentralTech.CTResilientAnalytics.Editor
         private Vector2 _scrollPosition = Vector2.zero;
         private Vector2 _statisticsScrollPosition = Vector2.zero;
         
+        // Track queue prevention/stalling events
+        private float _totalTimeSaved = 0f;
+        private bool _isCurrentlyBlocked = false;
+        private int _queueSize = 0;
+        
         // Track success/failure/retries per event name
         private Dictionary<string, EventStatistics> _eventStats = new();
 
@@ -57,6 +62,7 @@ namespace CentralTech.CTResilientAnalytics.Editor
             {
                 _analyticEventCache.Clear();
                 _eventStats.Clear();
+                _totalTimeSaved = 0;
             }
 
             EditorGUILayout.LabelField($"Total Events: {_analyticEventCache.Count}", EditorStyles.helpBox);
@@ -130,6 +136,10 @@ namespace CentralTech.CTResilientAnalytics.Editor
             string successRate = GetSuccessRate(totalSuccesses, totalFailures).ToString("F1");
             EditorGUILayout.LabelField($"Total Successes: {totalSuccesses} | Total Failures: {totalFailures} | Success Rate: {successRate}%", EditorStyles.label);
             
+            // Display time saved and blocking information
+            string blockingInfo = _isCurrentlyBlocked ? "🔒 BLOCKED" : "Unblocked";
+            EditorGUILayout.LabelField($"Time Saved: {_totalTimeSaved:F3}s | Queue Status: {blockingInfo}", EditorStyles.label);
+            EditorGUILayout.LabelField($"Queue Size: {_queueSize}", EditorStyles.label);
             EditorGUILayout.EndVertical();
         }
 
@@ -205,6 +215,8 @@ namespace CentralTech.CTResilientAnalytics.Editor
         {
             if (eventObject is AnalyticSentEvent analyticEvent)
             {
+                _isCurrentlyBlocked = false;
+                _queueSize= analyticEvent.QueueSize;
                 _analyticEventCache.Add(analyticEvent);
                 UpdateEventStatistics(analyticEvent);
                 Repaint();
@@ -233,6 +245,17 @@ namespace CentralTech.CTResilientAnalytics.Editor
             }
         }
 
+        private void OnQueuePreventedOrStalled(IEvent eventObject)
+        {
+            if (eventObject is AnalyticsQueuePreventedOrStalledEvent queueEvent)
+            {
+                _totalTimeSaved += queueEvent.AverageTimeRemaining;
+                _isCurrentlyBlocked = queueEvent.Blocked;
+                _queueSize = queueEvent.QueueSize;
+                Repaint();
+            }
+        }
+
         private void SetupVariables()
         {
             if (_resilientAnalyticsSystem == null && Application.isPlaying)
@@ -252,11 +275,13 @@ namespace CentralTech.CTResilientAnalytics.Editor
         private void RegisterToEvent()
         {
             _eventSystem.RegisterEvent<AnalyticSentEvent>(OnAnalyticSent);
+            _eventSystem.RegisterEvent<AnalyticsQueuePreventedOrStalledEvent>(OnQueuePreventedOrStalled);
         }
         
         private void UnregisterFromEvent()
         {
             _eventSystem?.UnregisterEvent<AnalyticSentEvent>(OnAnalyticSent);
+            _eventSystem?.UnregisterEvent<AnalyticsQueuePreventedOrStalledEvent>(OnQueuePreventedOrStalled);
         }
     }
 
