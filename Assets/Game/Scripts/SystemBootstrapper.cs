@@ -34,7 +34,7 @@ public class SystemBootstrapper : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.A))
         {
-            _resilientAnalyticsSystem.SendEvent("Blaaa");
+            _resilientAnalyticsSystem.SendEvent("Blaaa" + Random.Range(0, 1000));
         }
        // _resilientAnalyticsSystemV2.Update();
     }
