@@ -2,6 +2,7 @@
 This pacakges wraps an UnstableSDK to allow games to have more control over the glitches and errors.
 
 ## Useage
+Unity version built in 2022.3.62f2
 ResiliantAnanlyticsSystem provides the wrapper and functions to help control when events are to be sent 
 <img width="927" height="814" alt="image" src="https://github.com/user-attachments/assets/95c79536-2a79-4eb4-b5ef-524c4bff4008" />
 
