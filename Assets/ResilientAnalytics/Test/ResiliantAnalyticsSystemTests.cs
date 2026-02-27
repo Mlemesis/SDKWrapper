@@ -13,7 +13,7 @@ namespace CentralTech.CTResilientAnalytics.Test
     {
         private ResilientAnalyticsSystem _analyticsSystem;
         private MockEventSystem _mockEventSystem;
-        private float _waitTime = 6f; //needs to be long enough to allow for any stalled processes
+        private float _waitTime = 1f; //needs to be long enough to allow for any stalled processes
 
         [SetUp]
         public void Setup()
