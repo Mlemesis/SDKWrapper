@@ -2,17 +2,23 @@
     "name": "CTResilientAnalytics.Test",
     "rootNamespace": "",
     "references": [
-        "GUID:cd4339fb5dafb47a0bf54a74615baf7a"
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "CTEventSystem",
+        "CTSystemsBase",
+        "CTResilientAnalytics"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }
