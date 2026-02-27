@@ -2,16 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using CentralTech.CTEditorTools.Editor;
 using CentralTech.CTEventSystem;
-using CentralTech.CTResilientAnalytics;
 using CentralTech.CTSystemsBase;
 
 namespace CentralTech.CTResilientAnalytics.Editor
 {
     public class ResiliantAnalyticsEditorWindow : EditorWindow
     {
-        private IEditorLayoutHelper _editorLayoutHelper;
         private IEventSystem _eventSystem;
         private ResilientAnalyticsSystem _resilientAnalyticsSystem;
         private bool _setupForPlayMode = false;
@@ -20,7 +17,7 @@ namespace CentralTech.CTResilientAnalytics.Editor
         private List<AnalyticSentEvent> _analyticEventCache = new List<AnalyticSentEvent>();
         private Vector2 _scrollPosition = Vector2.zero;
         private Vector2 _statisticsScrollPosition = Vector2.zero;
-        private float _statisticsBoxHeight = 150f;
+        private string _eventNameInput = "";
         
         // Track success/failure/retries per event name
         private Dictionary<string, EventStatistics> _eventStats = new Dictionary<string, EventStatistics>();
@@ -244,10 +241,6 @@ namespace CentralTech.CTResilientAnalytics.Editor
 
         private void SetupVariables()
         {
-            if (_editorLayoutHelper == null)
-            {
-                _editorLayoutHelper = new EditorLayoutHelper();
-            }
             if (!_setupForPlayMode && Application.isPlaying)
             {   
                 //make sure we clean up as gameobjects are spawned to run coroutines
@@ -258,7 +251,7 @@ namespace CentralTech.CTResilientAnalytics.Editor
                 RegisterToEvent();
                 _setupForPlayMode = true;
             }
-            else if (_setupForPlayMode && !Application.isPlaying)
+            else if ((_setupForPlayMode || _resilientAnalyticsSystem == null) && !Application.isPlaying)
             {
                 _setupForPlayMode = false;
                 _eventSystem = new EventSystem();

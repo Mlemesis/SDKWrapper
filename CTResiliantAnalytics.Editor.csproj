@@ -748,10 +748,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="CTEditorTools.csproj">
-      <Project>{9b158809-f842-6eb2-9977-bd55ece14913}</Project>
-      <Name>CTEditorTools</Name>
-    </ProjectReference>
     <ProjectReference Include="CTResilientAnalytics.csproj">
       <Project>{4cb99800-ba39-d723-00b4-0845c2253ea1}</Project>
       <Name>CTResilientAnalytics</Name>
