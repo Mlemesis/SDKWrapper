@@ -136,13 +136,8 @@ namespace CentralTech.CTResilientAnalytics.Editor
 
         private string GetCircuitBreakerStatus(int successes, int failures)
         {
-            if (failures == 0)
-            {
-                return "🟢 Closed (All systems operational)";
-            }
-            
             int total = successes + failures;
-            if (total == 0)
+            if (failures == 0  || total == 0)
             {
                 return "🟢 Closed (All systems operational)";
             }
@@ -153,14 +148,13 @@ namespace CentralTech.CTResilientAnalytics.Editor
             {
                 return "🔴 Open (Too many failures)";
             }
-            else if (failureRate > 0.2f)
+            if (failureRate > 0.2f)
             {
                 return "🟡 Half-Open (Some failures detected)";
             }
-            else
-            {
-                return "🟢 Closed (Systems operational)";
-            }
+  
+            return "🟢 Closed (All systems operational)";
+            
         }
 
         private Color GetStatusColor(string status)
@@ -169,14 +163,12 @@ namespace CentralTech.CTResilientAnalytics.Editor
             {
                 return new Color(0.3f, 0.8f, 0.3f); // Green
             }
-            else if (status.Contains("Open"))
+            if (status.Contains("Open"))
             {
                 return new Color(0.9f, 0.3f, 0.3f); // Red
             }
-            else
-            {
-                return new Color(1f, 0.8f, 0.3f); // Yellow
-            }
+            return new Color(1f, 0.8f, 0.3f); // Yellow
+            
         }
 
         private float GetSuccessRate(int successes, int failures)

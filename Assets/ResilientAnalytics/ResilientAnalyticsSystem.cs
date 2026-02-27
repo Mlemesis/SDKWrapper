@@ -55,6 +55,7 @@ namespace CentralTech.CTResilientAnalytics
     public class ResilientAnalyticsSystem : IResilientAnalyticsSystem
     {
         private UnstableLegacyService _legacyService;
+        //this event queue would need to be saved to file to prevent loss of data
         private List<string> _eventQueue = new();
         private float _queueMaximumTime = 5f;
         private CoroutineRunner _coroutineRunner;
@@ -139,6 +140,7 @@ namespace CentralTech.CTResilientAnalytics
 
                 if (currentQueueTime > _queueMaximumTime)
                 {
+                    //we've taken to much time to bail out and we will try again when the next event is sent 
                     _coroutineRunner.StopCoroutine(_processQueueCoroutine);
                     _isProcessingQueue = false;
                 }
