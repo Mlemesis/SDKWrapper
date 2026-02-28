@@ -150,7 +150,8 @@ namespace CentralTech.CTResilientAnalytics.Test
     /// </summary>
     public class MockEventSystem : IEventSystem
     {
-        public List<IEvent> TriggeredEvents { get; } = new List<IEvent>();
+        public List<AnalyticSentEvent> TriggeredEvents { get; } = new List<AnalyticSentEvent>();
+        public List<AnalyticsQueuePreventedOrStalledEvent> BlockedEvents { get; } = new List<AnalyticsQueuePreventedOrStalledEvent>();
 
         public void RegisterEvent<T>(EventSystem.EventCallBack eventCallBack) where T : IEvent
         {
@@ -164,7 +165,15 @@ namespace CentralTech.CTResilientAnalytics.Test
 
         public void TriggerEvent(IEvent eventObject)
         {
-            TriggeredEvents.Add(eventObject);
+            if (eventObject is AnalyticSentEvent analyticSentEvent)
+            {
+                TriggeredEvents.Add(analyticSentEvent);
+            }
+            else if (eventObject is AnalyticsQueuePreventedOrStalledEvent queueEvent)
+            {
+                BlockedEvents.Add(queueEvent);
+            }
+            
         }
 
         public Type Interface => typeof(IEventSystem);
